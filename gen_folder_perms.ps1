@@ -20,9 +20,9 @@ param([string]$path, [string]$ident_ref)
     try {
         $file = (get-acl -path $path -ErrorAction Stop).Access
         foreach ($i in $file){
-            if (($global:ROLES -contains $i.FileSystemRights) -and ($i.IdentityReference -eq "REMPLOYAD\"+$ident_ref))
+            if (($i.IdentityReference -eq "REMPLOYAD\"+$ident_ref))
                 {
-			    return 1
+			    return $i.FileSystemRights
 		        }
             }
         return 0
@@ -41,7 +41,7 @@ loop through each $list_of_files for each share on the two fileservers
 for each of the file paths check with CheckPerm function
 if function returns 1 (ie. success) append path to $access list object
 #>
-$access = New-Object System.Collections.Generic.List[System.Object]
+$access = @{}
 
 
 $path = "\\RPLFSPR02\Groups2$\Employment Services\Recruitment"
@@ -49,7 +49,8 @@ write-host -NoNewline "Looking at: " $path " "
 $list_of_files =  Get-ChildItem -Path $path -Recurse -Depth 4 -Directory | Select-Object FullName  
 write-host $list_of_files.length " files to be checked"
 foreach ($file in $list_of_files){
-    if ((CheckPerm -path $file.FullName -ident_ref $global:GROUP) -eq 1){$access.Add($file.FullName)
+    $check = CheckPerm -path $file.FullName -ident_ref $global:GROUP
+    if ($check -ne 0){$access.Add($file.FullName,$check)
     }
             
         
