@@ -1,8 +1,11 @@
 ﻿<#
 Permissions/roles to look for in global variable
+
+\\RPLFSPR02\Groups2$\Employment Services\Recruitment\Market Development & Operations\Scotland\Glasgow\Jackie's folder
 #>
-$global:ROLES="FullControl","ListDirectory","Modify","Traverse","Write"
+$global:ROLES="FullControl","ListDirectory","Modify","Traverse","Write","Synchronize"
 $global:GROUP = "d.file.es.recruit.mktdevops.scotland.glasgow_manage.subfolders"
+
 
 
 <#
@@ -32,9 +35,8 @@ param([string]$path, [string]$ident_ref)
 
 
 <# 
-loop through the file servers, get children recursively to a depth of 4 (any deeper and the file paths 
-become too long to handle)
-select full names of any object that is a container (ie. folder)
+loop through the file servers, get children recursively to a depth of x (where x is low enough such that the path does not become too long)
+select full names of any object that is a directory (ie. folder)
 loop through each $list_of_files for each share on the two fileservers
 for each of the file paths check with CheckPerm function
 if function returns 1 (ie. success) append path to $access list object
@@ -42,7 +44,7 @@ if function returns 1 (ie. success) append path to $access list object
 $access = New-Object System.Collections.Generic.List[System.Object]
 
 
-$path = ""
+$path = "\\RPLFSPR02\Groups2$\Employment Services\Recruitment"
 write-host -NoNewline "Looking at: " $path " "
 $list_of_files =  Get-ChildItem -Path $path -Recurse -Depth 4 -Directory | Select-Object FullName  
 write-host $list_of_files.length " files to be checked"
