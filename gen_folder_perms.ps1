@@ -1,11 +1,8 @@
 ﻿<#
 Permissions/roles to look for in global variable
-
-\\RPLFSPR02\Groups2$\Employment Services\Recruitment\Market Development & Operations\Scotland\Glasgow\Jackie's folder
 #>
 $global:ROLES="FullControl","ListDirectory","Modify","Traverse","Write","Synchronize"
-$global:GROUP = "d.file.es.recruit.mktdevops.scotland.glasgow_manage.subfolders"
-
+$global:GROUP = "d.file.es.recruit.mktdevops.scotland.glasgow_manage"
 
 
 <#
@@ -20,7 +17,7 @@ param([string]$path, [string]$ident_ref)
     try {
         $file = (get-acl -path $path -ErrorAction Stop).Access
         foreach ($i in $file){
-            if (($i.IdentityReference -eq "REMPLOYAD\"+$ident_ref))
+            if ($i.IdentityReference -eq "REMPLOYAD\"+$ident_ref)
                 {
 			    return $i.FileSystemRights
 		        }
@@ -44,9 +41,9 @@ if function returns 1 (ie. success) append path to $access list object
 $access = @{}
 
 
-$path = "\\RPLFSPR02\Groups2$\Employment Services\Recruitment"
+$path = "\\RPLFSPR02\Groups2$\Employment Services\Recruitment\Market Development & Operations\Scotland\"
 write-host -NoNewline "Looking at: " $path " "
-$list_of_files =  Get-ChildItem -Path $path -Recurse -Depth 4 -Directory | Select-Object FullName  
+$list_of_files =  Get-ChildItem -Path $path -Recurse -Depth 1 -Directory | Select-Object FullName  
 write-host $list_of_files.length " files to be checked"
 foreach ($file in $list_of_files){
     $check = CheckPerm -path $file.FullName -ident_ref $global:GROUP
@@ -56,6 +53,6 @@ foreach ($file in $list_of_files){
         
 }
 #print for test of completion
-foreach ($line in $access){
-write-host $line
-}
+$output = $access.Keys | % { "key = $_ , value = " + $access.Item($_) } 
+$output.GetValue() | export-csv -Path "c:\SV\perms.csv"
+echo "Export complete"
